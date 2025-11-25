@@ -18,8 +18,6 @@ dtype = np.float32
 # However, the raw files are unreadible so we need to convert it
 # load_events function loads the dataset into .bin file format
 
-
-
 def load_events(file_path: str) -> np.ndarray:
     """
     Load events from dataset into .bin format
@@ -81,13 +79,11 @@ def load_events(file_path: str) -> np.ndarray:
         # be potenatial mixes to ensure this
         # A mask of 8 bits introduced
 
-        # Example
         # data >> 24 = 0b0111100001010000
-        # & 0xFF
-        #
+        #    & 0xFF
         #    0111100001010000  (shifted result)
-        #  & 0000000011111111  (mask)
-        #  ──────────────────  AND
+        #    0000000011111111  (mask)
+        #  ──────────────────  &
         #    0000000001010000  (only Y)
         x = (data >> 32) & 0xFF
         y = (data >> 24) & OxFF
@@ -95,17 +91,15 @@ def load_events(file_path: str) -> np.ndarray:
         polarity_bit = (data >> 23) & 0x01
         # No shift to timestamp, only masking
         timestamp = data & 0x7FFFFF
-
         # Convert polarity to binary
         polarity = 1 if polarity_bit == 1 else -1
-
         # Add event [x, y, timestamp, [polarity]
         events.append([x,y,timestamp,polarity])
-
     # Convert the event into NumPy array
     events = np.array(events, dtype = dtype)
 
     return events
+
 
 
 

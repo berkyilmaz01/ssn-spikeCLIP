@@ -43,7 +43,6 @@ def load_events(file_path: str) -> np.ndarray:
     event_size = 5
     events = []
 
-
     # Check if file exists, if it doesn't exist raise an error
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Event file not found: {file_path}")
@@ -86,7 +85,7 @@ def load_events(file_path: str) -> np.ndarray:
         #  ──────────────────  &
         #    0000000001010000  (only Y)
         x = (data >> 32) & 0xFF
-        y = (data >> 24) & OxFF
+        y = (data >> 24) & 0xFF
         # bit 23, masking with 0x01
         polarity_bit = (data >> 23) & 0x01
         # No shift to timestamp, only masking
@@ -99,6 +98,92 @@ def load_events(file_path: str) -> np.ndarray:
     events = np.array(events, dtype = dtype)
 
     return events
+
+    # Since SNN's need dense input, we need to convert
+    # these random list of events to a regular
+    # grid/tensor of numbers
+
+def events_to_voxel_grid(events: np.ndarray,
+                         num_bins: int,
+                         height: int,
+                         width: int,
+                         normalize: bool = True) -> torch.Tensor:
+        """
+        Convert events to voxel grid representation
+
+        :param events: numpy array of shape (N, 4) with columns [x, y, t, polarity]
+        :param num_bins: number of temporal bins (e.g., 5)
+        :param height: height of output grid (180 for N-Caltech101)
+        :param width: width of output grid (e.g., 240 for N-Caltech101)
+        :param normalize: whether to normalize the voxel grid (default: True)
+
+        :return:
+            voxel_grid: torch tensor of shape (num_bins, height, width)
+        """
+
+        # Check if events is empty
+        if len(events) == 0:
+            # If its empty, then return with empty voxel grid
+            return torch.zeros(num_bins, height, width, dtype=torch.float32)
+
+        # Extract the x,y, timestamp and polarity from events
+        # X coordinates
+        x = events[:, 0].astype(np.int32)
+        # Y coordinates
+        y = events[: ,1].astype(np.int32)
+        # timestamp
+        t = events[:, 2]
+        # polarity
+        polarity = events[:, 3]
+
+        # Normalize the timestamps
+        # Find the time range
+        t_max = t.max()
+        t_min = t.min()
+
+        # If time_max == time_min could be division by 0
+        if t_max == t_min:
+            # All events go to bin 0
+            t_norm = np.zeros_like(t)
+        else:
+            # Normalize to [0, num_bins)
+            t_norm = (t - t_min) / (t_max - t_min) * num_bins
+            # Clip to valid range
+            t_norm = np.clip(t_norm, 0, num_bins - 1)
+
+        # Convert to integer bin indices
+        t_idx = t_norm.astype(np.int32)
+
+        # Create an empty voxel
+        voxel = np.zeros((num_bins, height, width), dtype=torch.float32)
+
+        # Clip the coordinates into valid range
+        # Prevents the out-of-bounds errors
+        x = np.clip(x, 0, width - 1)
+        y = np.clip(y, 0, height - 1)
+
+        # Accumulate each event into vortex grid
+        for i in range(len(events)):
+            bin_idx = t_idx[i]
+            x_pos = x[i]
+            y_pos = y[i]
+            polarity_value = polarity[i]
+
+            # Add polarity to voxel at [bin, y, x]
+            voxel[bin_idx, y_pos, x_pos] += polarity_value
+
+        # Normalize the voxel grid
+        if normalize:
+            max_val = np.abs(voxel).max()
+            if max_val > 0:
+                voxel = voxel / max_val
+
+        # Conver to PyTorch tensor
+        voxel_tensor = torch.from_numpy(voxel)
+
+        return voxel_tensor
+
+
 
 
 

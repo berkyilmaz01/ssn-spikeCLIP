@@ -6,6 +6,9 @@ Implementation of **SNN-CLIP: Event-Based Image Reconstruction via Spiking Neura
 
 This repository contains a three-stage training pipeline for high-quality image reconstruction from event camera data using Spiking Neural Networks (SNNs) and CLIP semantic guidance.
 
+## Weight Path
+Google Drive : https://drive.google.com/drive/folders/1bl45-LRSiWhcC7WyLEiQWHtf9rxWpUXG?usp=sharing
+
 ## Overview
 
 SpikeCLIP combines:

@@ -31,6 +31,10 @@ from configs.stage2_config import (
     DEGRADE_LQ, NOISE_STD, BLUR_KERNEL_SIZE, WEIGHT_DECAY
 )
 from data.ncaltech101_dataset import NCaltech101Dataset
+# Force reload to avoid cached version
+import importlib
+if 'spikeclip_snn.data.hq_lq_dataset_postprocess' in sys.modules:
+    importlib.reload(sys.modules['spikeclip_snn.data.hq_lq_dataset_postprocess'])
 from spikeclip_snn.data.hq_lq_dataset_postprocess import HQLQDatasetPostProcess
 from models.snn_model import SNNReconstruction
 from models.prompt_learner import PromptCLIP

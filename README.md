@@ -2,6 +2,8 @@
 
 Implementation of **SpikeCLIP: Event-Based Image Reconstruction via Spiking Neural Networks with CLIP Guidance** (arXiv:2501.04477).
 
+<img width="2985" height="1431" alt="stage1_vs_stage3_comparison" src="https://github.com/user-attachments/assets/dad96311-1639-46e3-b1f4-c086c3a2ac39" />
+
 This repository contains a three-stage training pipeline for high-quality image reconstruction from event camera data using Spiking Neural Networks (SNNs) and CLIP semantic guidance.
 
 ## Overview
@@ -194,6 +196,21 @@ If you use this code in your research, please cite:
 ## License
 
 This project is licensed under the MIT License.
+
+## Visualization
+<img width="2000" height="1000" alt="stage_2" src="https://github.com/user-attachments/assets/77c46d1d-01fb-4a04-b64d-dd163bd10653" />
+
+<img width="1500" height="1000" alt="stage_2_1" src="https://github.com/user-attachments/assets/3aa9419e-2dae-4889-a4b0-69c765e54e50" />
+
+<img width="525" height="920" alt="image" src="https://github.com/user-attachments/assets/8c4d1f08-ac75-4975-88c4-391da73db100" />
+
+<img width="3535" height="1262" alt="stage1_visualization" src="https://github.com/user-attachments/assets/01a22c02-c4fa-4bd1-bf1a-5aa1b8fca6b5" />
+
+<img width="3535" height="1262" alt="stage1_visualization_2" src="https://github.com/user-attachments/assets/43d04049-3d24-4415-a611-af4a20054789" />
+
+<img width="3535" height="1262" alt="stage1_visualization_3" src="https://github.com/user-attachments/assets/3f276b55-d1f9-4258-a3b6-f96efce31148" />
+
+<img width="3535" height="1262" alt="stage1_visualization_4" src="https://github.com/user-attachments/assets/892ac3f2-a2d3-4676-ad6b-1cdfb61bccfe" />
 
 ## Acknowledgments
 

@@ -27,7 +27,8 @@ from torch.utils.data import DataLoader, random_split
 from configs.stage2_config import (
     EVENT_PATH, IMAGE_PATH, STAGE1_CHECKPOINT, STAGE2_CHECKPOINT_DIR,
     NUM_BINS, BETA, NUM_STEPS, N_CTX,
-    BATCH_SIZE, LEARNING_RATE, NUM_EPOCHS, TEMPERATURE, DEVICE, DEGRADATION_LEVEL,HQ_DATASET_DIR
+    BATCH_SIZE, LEARNING_RATE, NUM_EPOCHS, TEMPERATURE, DEVICE, DEGRADATION_LEVEL, HQ_DATASET_DIR,
+    DEGRADE_LQ, NOISE_STD, BLUR_KERNEL_SIZE, WEIGHT_DECAY
 )
 from data.ncaltech101_dataset import NCaltech101Dataset
 from spikeclip_snn.data.hq_lq_dataset_postprocess import HQLQDatasetPostProcess
@@ -90,7 +91,10 @@ def main():
         event_dataset=event_dataset,
         device=DEVICE,
         num_steps=NUM_STEPS,
-        samples_per_class=10
+        samples_per_class=10,
+        noise_std=NOISE_STD,
+        blur_kernel_size=BLUR_KERNEL_SIZE,
+        degrade_lq=DEGRADE_LQ
     )
 
     # Train/Val split
@@ -125,10 +129,11 @@ def main():
     model = PromptCLIP(clip_model, n_ctx=N_CTX).to(DEVICE)
 
     # Loss and optimizer (only prompt parameters!)
-    criterion = PromptLoss(label_smoothing=0.1)
+    criterion = PromptLoss(label_smoothing=0.2)  # Increased label smoothing
     optimizer = optim.Adam(
         model.prompt_learner.parameters(),
-        lr=LEARNING_RATE
+        lr=LEARNING_RATE,
+        weight_decay=WEIGHT_DECAY  # Regularization to prevent prompt convergence
     )
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
@@ -200,10 +205,19 @@ def main():
         val_losses.append(avg_val_loss)
         val_accs.append(val_acc)
 
+        # Check prompt similarity (important metric!)
+        with torch.no_grad():
+            text_features = model.get_prompt_features()  # (2, 512)
+            text_features_lq = text_features[0]  # (512,)
+            text_features_hq = text_features[1]  # (512,)
+            prompt_similarity = (text_features_lq @ text_features_hq).item()
+            prompt_similarity_pct = prompt_similarity * 100
+
         # Print epoch summary
         print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}] Summary:")
         print(f"  Train Loss: {avg_train_loss:.4f} | Train Acc: {train_acc:.4f}")
         print(f"  Val Loss:   {avg_val_loss:.4f} | Val Acc:   {val_acc:.4f}")
+        print(f"  Prompt Similarity: {prompt_similarity_pct:.2f}% (target: <90%, ideal: <80%)")
         print("=" * 60)
 
         # Save best model

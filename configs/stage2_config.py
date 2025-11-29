@@ -26,9 +26,15 @@ CLASS_TOKEN_POSITION = "end"
 
 # Training settings
 BATCH_SIZE = 32
-LEARNING_RATE = 0.001
-NUM_EPOCHS = 50
+LEARNING_RATE = 0.002  # Increased for better prompt learning
+NUM_EPOCHS = 100  # Increased to allow more learning
 TEMPERATURE = 0.07
+WEIGHT_DECAY = 1e-4  # Regularization to prevent prompt convergence
+
+# LQ Image Degradation Settings (to create stronger quality gap)
+DEGRADE_LQ = True  # Enable degradation of LQ images
+NOISE_STD = 0.15  # Gaussian noise standard deviation 
+BLUR_KERNEL_SIZE = 5  # Blur kernel size 
 
 # DEGRADATION_LEVEL
 DEGRADATION_LEVEL = "match_snn"

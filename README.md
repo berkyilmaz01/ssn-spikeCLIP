@@ -44,19 +44,48 @@ pip install -r requirements.txt
 pip install git+https://github.com/openai/CLIP.git
 ```
 
+4. **Configure environment:**
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env and update paths to match your system
+# Required variables: EVENT_PATH, IMAGE_PATH, STAGE1_CHECKPOINT, etc.
+```
+
 ## Dataset Preparation
 
 ### N-Caltech101 Dataset
 
-Prepare your data as follows:
+**Option 1: Automatic Setup (Recommended)**
+
+Run the data download script:
+
+```bash
+python scripts/download_data.py
+```
+
+This script will:
+- Check for existing datasets
+- Attempt to download Caltech101 images automatically
+- Provide instructions for downloading N-Caltech101 event data (may require manual download due to Baidu restrictions)
+- Verify dataset structure
+
+**Option 2: Manual Setup**
 
 1. **Download N-Caltech101:**
-   - Event data: Place in `datasets/N-Caltech101/Caltech101/Caltech101/`
-   - Image data: Place in `datasets/101_ObjectCategories/101_ObjectCategories/`
+   - Event data: Visit https://www.garrickorchard.com/datasets/n-caltech101
+   - Extract to `datasets/N-Caltech101/Caltech101/Caltech101/`
+   - Image data: Visit http://www.vision.caltech.edu/Image_Datasets/Caltech101/
+   - Extract to `datasets/101_ObjectCategories/101_ObjectCategories/`
 
-2. **Update Configuration:**
-   - Edit `configs/stage2_config.py` and `configs/stage3_config.py`
-   - Update `EVENT_PATH` and `IMAGE_PATH` to match your dataset locations
+2. **Configure Environment:**
+   - Copy `.env.example` to `.env`
+   - Update paths in `.env` file:
+     ```
+     EVENT_PATH=path/to/datasets/N-Caltech101/Caltech101/Caltech101
+     IMAGE_PATH=path/to/datasets/101_ObjectCategories/101_ObjectCategories
+     ```
 
 ## Training Pipeline
 
@@ -119,10 +148,12 @@ ssn-spikeCLIP/
 ├── configs/                 # Configuration files for each stage
 │   ├── stage2_config.py
 │   └── stage3_config.py
-├── scripts/                 # Training scripts
+├── scripts/                 # Training and utility scripts
 │   ├── train_stage2.py
 │   ├── train_stage3.py
-│   └── generate_hq_firenet.py
+│   ├── test_model.py        # Test script for inference
+│   ├── profile_snn.py       # Performance profiling
+│   └── download_data.py     # Dataset download helper
 ├── spikeclip_snn/          # Core SNN implementation
 │   ├── models/
 │   │   ├── snn_model.py    # SNN reconstruction model
@@ -134,8 +165,12 @@ ssn-spikeCLIP/
 ├── losses/                  # Loss functions
 │   ├── prompt_loss.py     # Stage 2 prompt loss
 │   └── quality_loss.py    # Stage 3 quality loss
+├── configs/                 # Configuration files
+│   ├── stage2_config.py
+│   └── stage3_config.py
 ├── data/                    # Dataset loaders
 │   └── ncaltech101_dataset.py
+├── .env.example            # Environment variable template
 ├── tests/                   # Testing and verification scripts
 │   ├── verify_stage2_prompts.py
 │   └── visualize_stage2.py
@@ -165,6 +200,37 @@ print("This still works!")
 
 Logs are saved to `logs/spikeclip_YYYYMMDD_HHMMSS.log` and also printed to console.
 
+## Testing
+
+### Quick Test
+
+Run the test script to verify model inference and see outputs:
+
+```bash
+python scripts/test_model.py
+```
+
+This will:
+- Load trained Stage 1 model
+- Run inference on sample data
+- Display input events, ground truth, and reconstructed images
+- Show metrics (PSNR, latency, throughput)
+- Save visualization to `checkpoints/test_output.png`
+
+### Performance Profiling
+
+Profile model performance (latency, throughput, power):
+
+```bash
+python scripts/profile_snn.py
+```
+
+This measures:
+- **Latency**: Inference time per sample and batch
+- **Throughput**: Samples processed per second
+- **Power**: GPU power consumption during inference
+- **FLOPs**: Estimated floating point operations
+
 ## Evaluation
 
 After training, evaluate your models:
@@ -177,8 +243,42 @@ python tests/verify_stage2_prompts.py
 python tests/visualize_stage2.py
 
 # Compare Stage 1 vs Stage 3 outputs
-python visualize_stage3.py
+python tests/visualize_stage3.py
 ```
+
+## Results
+
+### Model Performance
+
+**Model Architecture:**
+- Parameters: 1,028,545 (3.92 MB)
+- FLOPs: 24.30 GFLOPs per inference
+- Temporal Steps: 50
+
+**Inference Performance (RTX 4080 SUPER):**
+
+| Batch Size | Latency (ms) | Latency/Sample (ms) | Throughput (samples/s) |
+|------------|--------------|---------------------|------------------------|
+| 1          | 102.00       | 102.00              | 9.84                   |
+| 4          | 104.64       | 26.16               | 39.76                  |
+| 8          | 103.91       | 12.99               | 80.07                  |
+| 16         | 148.48       | 9.28                | 109.05                 |
+| 32         | 375.71       | 11.74               | 84.89                  |
+
+**Power Consumption:**
+- Idle Power: 110.14 W
+- Active Power: 204.63 W
+- Inference Overhead: 94.49 W
+
+**Image Quality:**
+- Stage 1 PSNR: ~9.80 dB
+- Stage 3 PSNR: ~12.24 dB
+- Improvement: +2.44 dB
+
+**Recommendations:**
+- Use batch size 16 for optimal throughput (109 samples/s)
+- Single-sample latency: ~102 ms
+- Batch processing reduces per-sample latency significantly
 
 ## Citation
 

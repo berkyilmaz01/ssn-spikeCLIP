@@ -3,12 +3,18 @@ Stage 2 Configuration: Prompt Learning
 Following SpikeCLIP paper Section 3.2
 https://arxiv.org/abs/2501.04477
 """
+import os
 import torch
+from dotenv import load_dotenv
 
-EVENT_PATH = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/datasets/N-Caltech101/Caltech101/Caltech101"
-IMAGE_PATH = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/datasets/101_ObjectCategories/101_ObjectCategories"
-STAGE1_CHECKPOINT = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/spikeclip_snn/checkpoints/spikeclip_best.pth"
-STAGE2_CHECKPOINT_DIR = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/spikeclip_snn/checkpoints/stage2"
+# Load environment variables from .env file
+load_dotenv()
+
+# Paths from environment variables
+EVENT_PATH = os.getenv("EVENT_PATH")
+IMAGE_PATH = os.getenv("IMAGE_PATH")
+STAGE1_CHECKPOINT = os.getenv("STAGE1_CHECKPOINT")
+STAGE2_CHECKPOINT_DIR = os.getenv("STAGE2_CHECKPOINT_DIR")
 
 
 # Model Settings
@@ -41,4 +47,4 @@ DEGRADATION_LEVEL = "match_snn"
 
 # Check device
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-HQ_DATASET_DIR = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/datasets/HQ_Dataset"
+HQ_DATASET_DIR = os.getenv("HQ_DATASET_DIR")

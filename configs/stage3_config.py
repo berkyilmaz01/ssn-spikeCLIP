@@ -5,14 +5,19 @@ https://arxiv.org/abs/2501.04477
 """
 
 # Import libraries
+import os
 import torch
+from dotenv import load_dotenv
 
-# Paths
-EVENT_PATH = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/datasets/N-Caltech101/Caltech101/Caltech101"
-IMAGE_PATH = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/datasets/101_ObjectCategories/101_ObjectCategories"
-STAGE1_CHECKPOINT = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/spikeclip_snn/checkpoints/spikeclip_best.pth"
-STAGE2_CHECKPOINT = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/spikeclip_snn/checkpoints/stage2/prompt_best.pth"
-STAGE3_CHECKPOINT_DIR = "C:/Users/berky/PycharmProjects/ssn-spikeCLIP/spikeclip_snn/checkpoints/stage3"
+# Load environment variables from .env file
+load_dotenv()
+
+# Paths from environment variables
+EVENT_PATH = os.getenv("EVENT_PATH")
+IMAGE_PATH = os.getenv("IMAGE_PATH")
+STAGE1_CHECKPOINT = os.getenv("STAGE1_CHECKPOINT")
+STAGE2_CHECKPOINT = os.getenv("STAGE2_CHECKPOINT")
+STAGE3_CHECKPOINT_DIR = os.getenv("STAGE3_CHECKPOINT_DIR")
 
 # Model Settings
 NUM_BINS = 5
